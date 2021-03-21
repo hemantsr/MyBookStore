@@ -9,6 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Optional;
+
 @Component
 @Slf4j
 public class OrderDao {
@@ -32,5 +35,15 @@ public class OrderDao {
         //delete from cart.
         cartRepository.deleteById(orderRequest.getUserId());
         return orderId;
+    }
+
+    public Order getOrderByOrderid(String orderId) {
+        Optional<Order> orderFetched = orderRepository.findById(orderId);
+        return orderFetched.orElseThrow(() -> new RuntimeException("No Matching Order Present"));
+    }
+
+    public List<Order> getOrderByUserId(String userId) {
+        return orderRepository.findOrderByUserId(userId)
+            .orElseThrow(() -> new RuntimeException("No Matching Order Present"));
     }
 }
