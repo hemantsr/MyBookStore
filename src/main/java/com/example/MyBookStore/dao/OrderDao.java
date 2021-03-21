@@ -1,5 +1,7 @@
 package com.example.MyBookStore.dao;
 
+import com.example.MyBookStore.constants.PublisherConstants;
+import com.example.MyBookStore.kafka.KafkaPublisher;
 import com.example.MyBookStore.model.Cart;
 import com.example.MyBookStore.model.Order;
 import com.example.MyBookStore.model.OrderRequest;
@@ -20,6 +22,8 @@ public class OrderDao {
     private OrderRepository orderRepository;
     @Autowired
     private CartRepository cartRepository;
+    @Autowired
+    private KafkaPublisher kafkaPublisher;
 
     public String placeOrder(OrderRequest orderRequest) {
 
@@ -31,9 +35,11 @@ public class OrderDao {
         order.setPaymentDetails(orderRequest.getPaymentDetails());
         //save order details.
         String orderId = orderRepository.save(order).getOrderId();
+        kafkaPublisher.sendMessage(order, PublisherConstants.ORDER_CREATION_TOPIC);
         log.info("OrderId is:{}", orderId);
         //delete from cart.
         cartRepository.deleteById(orderRequest.getUserId());
+
         return orderId;
     }
 
